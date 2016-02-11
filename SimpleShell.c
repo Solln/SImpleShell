@@ -5,4 +5,14 @@
 @brief
 *******************************************************************************/
 
+#include <stdio.h>
 
+
+char read_line(void)
+{
+    char line [512];
+    printf(">");
+    
+    gets(line);
+    return line;
+}
