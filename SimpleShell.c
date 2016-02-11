@@ -6,13 +6,21 @@
 *******************************************************************************/
 
 #include <stdio.h>
+#define MAXIN 512
+#define INERR -1
 
 
-char read_line(void)
+int read_line()
 {
-    char line [512];
+    char line[512];
     printf(">");
-    
-    gets(line);
-    return line;
+
+    fgets(&line, MAXIN, stdin);
+    printf("%s\n", line);
+    return 0;
+}
+
+int main() {
+    while(read_line() == 0);
+    return 0;
 }
