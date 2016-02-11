@@ -6,21 +6,33 @@
 *******************************************************************************/
 
 #include <stdio.h>
+#include <string.h>
 #define MAXIN 512
 #define INERR -1
 
 
-int read_line()
-{
-    char line[512];
-    printf(">");
-
-    fgets(&line, MAXIN, stdin);
-    printf("%s\n", line);
-    return 0;
-}
-
 int main() {
-    while(read_line() == 0);
-    return 0;
+    
+    char line [512];
+    char delim[] = " ";
+    char* token;
+    
+    do{
+    
+    printf(">");
+    
+    fgets(line, MAXIN, stdin);
+        
+    
+    } while (strlen(line) <= 1);
+    
+    
+    for (token = strtok(line, delim); token; token = strtok(NULL, delim))
+    {
+        printf("token=%s\n", token);
+    }
+    
+    
+    
+    
 }
