@@ -13,6 +13,7 @@ char read_line(void)
     char line [512];
     printf(">");
     
-    gets(line);
+    fgets(line, sizeof(line), stdin);
+    
     return line;
 }
