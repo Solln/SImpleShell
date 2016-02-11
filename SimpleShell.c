@@ -6,7 +6,8 @@
 *******************************************************************************/
 
 #include <stdio.h>
-
+#include <stdout.h>
+#include <stderr.h>
 
 char read_line(void)
 {
