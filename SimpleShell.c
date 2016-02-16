@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+
+
 #define MAXIN 512
 #define INERR -1
 
@@ -19,6 +21,8 @@ char line [MAXIN];
 char delim[] = " |><,&;";
 char* token;
 bool exitShell = false;
+
+
 
     while (exitShell == false) {
 
@@ -33,6 +37,7 @@ bool exitShell = false;
                     exitShell = true;
                     //return 1;
             }
+                
             printf("token = %s\n", token);
             token = strtok(NULL, delim);
         }
@@ -40,7 +45,38 @@ bool exitShell = false;
     return 0;
 }
 
-/* Need to error trap for White space input (can trap other error input here as well)
+
+/* Moving onto task two, checked about adding the fork and wait statement. but It broke the exit command.
+ Entered this code in where its marked ***Here***
+ 
+ 
+ else
+
+{
+    pid = fork();
+    if (pid){
+        printf("Waiting for child (%d)\n", pid);
+        pid = wait(ret_status);
+        printf("Child (%d) finished\n", pid);
+    }
+}
+ 
+Had these variables set as well at the top:
+
+ pid_t pid;
+ int *ret_status;
+ 
+As well as these includes:
+ #include <unistd.h>
+ #include <errno.h>
+ #include <sys/types.h>
+ 
+Unsure as to exact implementation, was using http://rik0.altervista.org/snippets/csimpleshell.html as advice.
+ 
+ 
+ 
+ 
+   Need to error trap for White space input (can trap other error input here as well)
    Need to add the exit command to break the loop
     Added 14/02/2016
 */
