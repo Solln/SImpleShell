@@ -18,7 +18,7 @@
 
 int main() {
 char line [MAXIN];
-char delim[] = " |><,&;";
+char delim[] = " \t|><,&;";
 char* token;
 bool exitShell = false;
 
@@ -32,13 +32,18 @@ bool exitShell = false;
         } while (strlen(line) <= 1);
         (line[strlen(line)-1] == '\n')? line[strlen(line)-1] = '\0' : 0;
         token = strtok(line, delim);
-        while (token != NULL){
-            if ((strcmp("exit", token) == 0) || (strcmp("<ctrl>-D", token) == 0))  {
+        if ((strcmp("exit", token) == 0) || (strcmp(EOF, token) == 0))  {
                     printf("Quitting\n");
                     exitShell = true;
                     //return 1;
             }
-            printf("token = %s\n", token);
+        while (token != NULL){
+         /*   if ((strcmp("exit", token) == 0) || (strcmp("^D", token) == 0))  {
+                    printf("Quitting\n");
+                    exitShell = true;
+                    //return 1;
+            }*/
+            printf("token = (%s)\n", token);
             token = strtok(NULL, delim);
         }
     }
