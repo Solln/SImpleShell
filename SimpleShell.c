@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/types.h>
 
 
 void parseLine(char* cmd, char** params);
@@ -24,10 +25,12 @@ int main()
     char line[MAXIN];
     char* strings[MAXPARA];
     
+    char filePath[] = "C:\\";
+
     
     while(1){
         
-        printf(">");
+        printf("%s>", filePath);
         
         if (fgets(line, sizeof(line), stdin) == NULL) break;
         
@@ -45,20 +48,19 @@ int main()
         if (executeLine(strings) == 0) break;
         
     }
-    
-    return 0;
 }
-    
 
-void parseLine(char* line, char** strings)
-{
+        
+        void parseLine(char* line, char** strings)
+
+        {
     
-    for(int i = 0; i < MAXPARA; i++) {
-        strings[i] = strsep(&line, " ");
-        if(strings[i] == NULL) break;
+            for(int i = 0; i < MAXPARA; i++) {
+                strings[i] = strsep(&line, " ");
+                if(strings[i] == NULL) break;
     
-}
-}
+                }
+        }
 
 
 
