@@ -12,29 +12,35 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 
 
-void parseLine(char* cmd, char** params);
+//void parseLine(char* cmd, char** params);
 int executeLine(char** params);
 
 #define MAXIN 512
 #define MAXPARA 50
+#define MAXPATH 120
+
+char* path;
 
 int main()
 {
     char line[MAXIN];
-    char delim[] = " |><,&;";
+    char delim[] = " |><,&;\t";
     char* token;
     char* strings[MAXPARA];
 
     memset(strings, 0, sizeof(strings));
 
-    char filePath[] = "C:\\";
+    char filePath[MAXPATH];
+
+    path = (getcwd( filePath, MAXPATH ) != NULL)? filePath : "ERROR";
 
     bool exitShell = false;
     while(!exitShell){
 
-        printf("%s>", filePath);
+        printf("%s>", path);
 
         if (fgets(line, sizeof(line), stdin) == NULL) break;
 
@@ -96,8 +102,7 @@ int executeLine(char** strings)
         // Parent process
         else {
             // Wait for child process to finish
-            int childStatus;
-            waitpid(pid, &childStatus, 0);
+            wait(NULL);
             return 1;
         }
 
