@@ -22,10 +22,14 @@ int executeLine(char** params);
 #define MAXPARA 50
 #define MAXPATH 120
 
+char* currentDir;
 char* path;
 
 int main()
 {
+    path = getenv("PATH");
+    //printf("path is %s\n",path);
+
     char line[MAXIN];
     char delim[] = " |><,&;\t";
     char* token;
@@ -35,12 +39,12 @@ int main()
 
     char filePath[MAXPATH];
 
-    path = (getcwd( filePath, MAXPATH ) != NULL)? filePath : "ERROR";
+    currentDir = (getcwd( filePath, MAXPATH ) != NULL)? filePath : "ERROR";
 
     bool exitShell = false;
     while(!exitShell){
 
-        printf("%s>", path);
+        printf("%s>", currentDir);
 
         if (fgets(line, sizeof(line), stdin) == NULL) break;
 
@@ -53,7 +57,7 @@ int main()
             if ((strcmp("exit", strings[0]) == 0))  {
                     printf("Quitting\n");
                     exitShell = true;
-                    break;
+                    return 1;
                     //return 1;
             }
             printf("token = %s\n", strings[i++]);
@@ -65,16 +69,8 @@ int main()
         //To flush strings at the end of each cycle of input
         memset(strings, 0, sizeof(strings));
     }
+   return 0;
 }
-
-/*
-void parseLine(char* line, char** strings) {
-        for (int i = 0; i < MAXPARA; i++) {
-            strings[i] = strsep(&line, " ");
-            if(strings[i] == NULL) break;
-        }
-}
-*/
 
 int executeLine(char** strings)
 {
@@ -94,8 +90,7 @@ int executeLine(char** strings)
             execvp(strings[0], strings);
 
             // Error occurred
-            char* error = strerror(errno);
-            printf("shell: %s: %s\n", strings[0], error);
+            perror("Error during child process");
             return 0;
         }
 
