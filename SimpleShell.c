@@ -54,7 +54,7 @@ int main()
             token = strtok(NULL, delim);
         }
 
-        executeLine(strings) == 0) break;
+        if (executeLine(strings) == 0) break;
 
         //To flush strings at the end of each cycle of input
         memset(strings, 0, sizeof(strings));
