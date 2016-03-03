@@ -25,13 +25,13 @@ int setPath( char*);
 #define MAXPATH 120
 
 const char* currentDir;
-const char* originalPath;
+//const char* originalPath;
 char* path;
 
 int main()
 {
     path = getenv("PATH");
-    originalPath = *path;
+    //originalPath = *path;
     //printf("path is %s\n",path);
 
     char line[MAXIN];
@@ -54,7 +54,7 @@ int main()
         token = strtok(line, delim);
         int i = 0;
         while (token != NULL){
-            strings[i] = token;
+            strings[i++] = token;
             //printf("token = %s\n", strings[i++]);
             token = strtok(NULL, delim);
         }
@@ -69,15 +69,17 @@ int main()
             getPath();
         }
         else if (strcmp("setpath", strings[0]) == 0) {
-            if (setPath(strings[1])) perror("setenv error:");
-            printf("orig path %s\n", originalPath);
+	    /*setenv("PATH", strings[1], 1);
+	    perror("setenv error: ");*/
+            if (setPath(strings[1]) == 0) perror("setenv error:");
+            //printf("orig path %s\n", originalPath);
         }
         else if (executeLine(strings) == 0) break;
 
         //To flush strings at the end of each cycle of input
         memset(strings, 0, sizeof(strings));
     }
-   setPath(originalPath);
+   //setPath(originalPath);
    getPath();
    return 0;
 }
@@ -120,9 +122,7 @@ char* getPath() {
 
 int setPath(char *newPath) {
     printf("%s\n", newPath);
-    if (sizeof(newPath) != 0) {
-        if (setenv("PATH", newPath, 1) != 0) return 1;
-    }
+    if (setenv("PATH", newPath, 1) != 0) return 1;
     return 0;
 }
 /*
