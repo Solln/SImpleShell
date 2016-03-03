@@ -15,11 +15,11 @@
 #include <sys/wait.h>
 
 
-
+/*
 int executeLine(char** params);
 char* getPath(void);
 int setPath( char*);
-
+*/
 #define MAXIN 512
 #define MAXPARA 50
 #define MAXPATH 120
@@ -27,7 +27,7 @@ int setPath( char*);
 const char* currentDir;
 char* path;
 
-char* getPath() {
+char* getPath() { 
     printf("%s\n", getenv("PATH"));
     return path;
 }
@@ -78,13 +78,11 @@ int main()
     memset(strings, 0, sizeof(strings));
     char filePath[MAXPATH];
     chdir(getenv("HOME"));
-    
 
     bool exitShell = false;
-    while(!exitShell){
+    while(!exitShell) {
 
-        currentDir = (getcwd( filePath, MAXPATH ) != NULL)? filePath : "ERROR";
-        
+	currentDir = (getcwd( filePath, MAXPATH ) != NULL)? filePath : "ERROR";
         printf("%s>", currentDir);
 
         if (fgets(line, sizeof(line), stdin) == NULL) break;
@@ -97,41 +95,39 @@ int main()
             //printf("token = %s\n", strings[i++]);
             token = strtok(NULL, delim);
         }
-
-        if ((strcmp("exit", strings[0]) == 0))  {
-                    printf("Quitting\n");
+        if ((strcmp("exit", strings[0]) == 0))  {                    
                     exitShell = true;
-                    break;
+                    //break;
         }
         else if (strcmp("getpath", strings[0]) == 0) {
             getPath();
         }
-        
         else if (strcmp("setpath", strings[0]) == 0) {
             if (setPath(strings[1])) perror("setenv error:");
         }
-        
+	       
         //Code for the cd command, needs to change the directory name when showing the path.
-        
+         
         else if (strcmp("cd", strings[0]) == 0){
             if (strings[1] == NULL) {
                 fprintf(stderr, "error: expected argument to \"cd\"\n");
             } else {
-                if (chdir(strings[1]) != 0) {
-                    perror("error");
+               if (chdir(strings[1]) != 0) {
+                   perror("error");
                 }
                 
-                
-                
-            }
-        }
-        else if (executeLine(strings) == 0) break;
+                 
+                 
+         }
+	}
+        else executeLine(strings);
 
         //To flush strings at the end of each cycle of input
         memset(strings, 0, sizeof(strings));
-    }
+   }
    setPath(path);
    getPath();
+   printf("Quitting\n");
    return 0;
 }
 
