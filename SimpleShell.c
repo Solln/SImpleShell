@@ -17,28 +17,30 @@
 
 //void parseLine(char* cmd, char** params);
 int executeLine(char** params);
+char* getPath(void);
+int setPath( char*);
 
 #define MAXIN 512
 #define MAXPARA 50
 #define MAXPATH 120
 
-char* currentDir;
+const char* currentDir;
+const char* originalPath;
 char* path;
 
 int main()
 {
     path = getenv("PATH");
+    originalPath = *path;
     //printf("path is %s\n",path);
 
     char line[MAXIN];
     char delim[] = " |><,&;\t";
     char* token;
     char* strings[MAXPARA];
-
     memset(strings, 0, sizeof(strings));
-
     char filePath[MAXPATH];
-
+    chdir(getenv("HOME"));
     currentDir = (getcwd( filePath, MAXPATH ) != NULL)? filePath : "ERROR";
 
     bool exitShell = false;
@@ -47,28 +49,36 @@ int main()
         printf("%s>", currentDir);
 
         if (fgets(line, sizeof(line), stdin) == NULL) break;
-
         (line[strlen(line)-1] == '\n')? line[strlen(line)-1] = '\0' : 0;
 
         token = strtok(line, delim);
         int i = 0;
         while (token != NULL){
             strings[i] = token;
-            if ((strcmp("exit", strings[0]) == 0))  {
-                    printf("Quitting\n");
-                    exitShell = true;
-                    return 1;
-                    //return 1;
-            }
-            printf("token = %s\n", strings[i++]);
+            //printf("token = %s\n", strings[i++]);
             token = strtok(NULL, delim);
         }
 
-        if (executeLine(strings) == 0) break;
+        if ((strcmp("exit", strings[0]) == 0))  {
+                    printf("Quitting\n");
+                    exitShell = true;
+                    break;
+                    //return 1;
+        }
+        else if (strcmp("getpath", strings[0]) == 0) {
+            getPath();
+        }
+        else if (strcmp("setpath", strings[0]) == 0) {
+            if (setPath(strings[1])) perror("setenv error:");
+            printf("orig path %s\n", originalPath);
+        }
+        else if (executeLine(strings) == 0) break;
 
         //To flush strings at the end of each cycle of input
         memset(strings, 0, sizeof(strings));
     }
+   setPath(originalPath);
+   getPath();
    return 0;
 }
 
@@ -103,6 +113,18 @@ int executeLine(char** strings)
 
     }
 
+char* getPath() {
+    printf("%s\n", path);
+    return path;
+}
+
+int setPath(char *newPath) {
+    printf("%s\n", newPath);
+    if (sizeof(newPath) != 0) {
+        if (setenv("PATH", newPath, 1) != 0) return 1;
+    }
+    return 0;
+}
 /*
 
    Need to error trap for White space input (can trap other error input here as well)
