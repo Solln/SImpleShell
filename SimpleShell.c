@@ -15,7 +15,7 @@
 #include <sys/wait.h>
 
 
-//void parseLine(char* cmd, char** params);
+
 int executeLine(char** params);
 char* getPath(void);
 int setPath( char*);
@@ -25,14 +25,51 @@ int setPath( char*);
 #define MAXPATH 120
 
 const char* currentDir;
-//const char* originalPath;
 char* path;
+
+char* getPath() {
+    printf("%s\n", getenv("PATH"));
+    return path;
+}
+
+int setPath(char *newPath) {
+    
+    if (setenv("PATH", newPath, 1) != 0) return 1;
+    return 0;
+}
+
+int executeLine(char** strings) {
+        // Fork process
+        pid_t pid = fork();
+
+        // Error
+        if (pid < 0) {
+            char* error = strerror(errno);
+            printf("fork: %s\n", error);
+            return 1;
+        }
+
+        // Child process
+        else if (pid == 0) {
+            // Execute command
+            execvp(strings[0], strings);
+
+            // Error occurred
+            perror(strings[0]);
+            return 0;
+        }
+
+        // Parent process
+        else {
+            // Wait for child process to finish
+            wait(NULL);
+            return 1;
+        }
+}
 
 int main()
 {
     path = getenv("PATH");
-    //originalPath = *path;
-    //printf("path is %s\n",path);
 
     char line[MAXIN];
     char delim[] = " |><,&;\t";
@@ -63,68 +100,23 @@ int main()
                     printf("Quitting\n");
                     exitShell = true;
                     break;
-                    //return 1;
         }
         else if (strcmp("getpath", strings[0]) == 0) {
             getPath();
         }
         else if (strcmp("setpath", strings[0]) == 0) {
-	    /*setenv("PATH", strings[1], 1);
-	    perror("setenv error: ");*/
-            if (setPath(strings[1]) == 0) perror("setenv error:");
-            //printf("orig path %s\n", originalPath);
+            if (setPath(strings[1])) perror("setenv error:");
         }
         else if (executeLine(strings) == 0) break;
 
         //To flush strings at the end of each cycle of input
         memset(strings, 0, sizeof(strings));
     }
-   //setPath(originalPath);
+   setPath(path);
    getPath();
    return 0;
 }
 
-int executeLine(char** strings)
-{
-        // Fork process
-        pid_t pid = fork();
-
-        // Error
-        if (pid < 0) {
-            char* error = strerror(errno);
-            printf("fork: %s\n", error);
-            return 1;
-        }
-
-        // Child process
-        else if (pid == 0) {
-            // Execute command
-            execvp(strings[0], strings);
-
-            // Error occurred
-            perror("Error during child process");
-            return 0;
-        }
-
-        // Parent process
-        else {
-            // Wait for child process to finish
-            wait(NULL);
-            return 1;
-        }
-
-    }
-
-char* getPath() {
-    printf("%s\n", path);
-    return path;
-}
-
-int setPath(char *newPath) {
-    printf("%s\n", newPath);
-    if (setenv("PATH", newPath, 1) != 0) return 1;
-    return 0;
-}
 /*
 
    Need to error trap for White space input (can trap other error input here as well)
