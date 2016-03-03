@@ -78,11 +78,13 @@ int main()
     memset(strings, 0, sizeof(strings));
     char filePath[MAXPATH];
     chdir(getenv("HOME"));
-    currentDir = (getcwd( filePath, MAXPATH ) != NULL)? filePath : "ERROR";
+    
 
     bool exitShell = false;
     while(!exitShell){
 
+        currentDir = (getcwd( filePath, MAXPATH ) != NULL)? filePath : "ERROR";
+        
         printf("%s>", currentDir);
 
         if (fgets(line, sizeof(line), stdin) == NULL) break;
@@ -104,8 +106,24 @@ int main()
         else if (strcmp("getpath", strings[0]) == 0) {
             getPath();
         }
+        
         else if (strcmp("setpath", strings[0]) == 0) {
             if (setPath(strings[1])) perror("setenv error:");
+        }
+        
+        //Code for the cd command, needs to change the directory name when showing the path.
+        
+        else if (strcmp("cd", strings[0]) == 0){
+            if (strings[1] == NULL) {
+                fprintf(stderr, "error: expected argument to \"cd\"\n");
+            } else {
+                if (chdir(strings[1]) != 0) {
+                    perror("error");
+                }
+                
+                
+                
+            }
         }
         else if (executeLine(strings) == 0) break;
 
