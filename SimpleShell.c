@@ -115,16 +115,10 @@ int main()
             } else {
                if (chdir(strings[1]) != 0) {
                    perror("error");
-<<<<<<< Updated upstream
-                }            
-         }
-	}
-=======
                }
-                
             }
         }
->>>>>>> Stashed changes
+
         else executeLine(strings);
 
         //To flush strings at the end of each cycle of input
