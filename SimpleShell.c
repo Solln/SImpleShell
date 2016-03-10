@@ -111,13 +111,20 @@ int main()
          
         else if (strcmp("cd", strings[0]) == 0){
             if (strings[1] == NULL) {
-                fprintf(stderr, "error: expected argument to \"cd\"\n");
+                chdir(getenv("HOME"));
             } else {
                if (chdir(strings[1]) != 0) {
                    perror("error");
+<<<<<<< Updated upstream
                 }            
          }
 	}
+=======
+               }
+                
+            }
+        }
+>>>>>>> Stashed changes
         else executeLine(strings);
 
         //To flush strings at the end of each cycle of input
