@@ -95,6 +95,7 @@ int main()
             //printf("token = %s\n", strings[i++]);
             token = strtok(NULL, delim);
         }
+	if (strings[0] == NULL) continue;
         if ((strcmp("exit", strings[0]) == 0))  {                    
                     exitShell = true;
                     //break;
@@ -114,10 +115,7 @@ int main()
             } else {
                if (chdir(strings[1]) != 0) {
                    perror("error");
-                }
-                
-                 
-                 
+                }            
          }
 	}
         else executeLine(strings);
