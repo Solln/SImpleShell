@@ -122,6 +122,25 @@ int main()
             }
         }
 
+        char firstLetter = line[0];
+        
+        if (firstLetter == '!'){
+            
+            int number = line[1] - '0';
+            
+            //Needs to asign the Line to the command in the array at position 'number'
+            
+            
+            token = strtok(line, delim);
+            int i = 0;
+            while (token != NULL){
+                strings[i++] = token;
+                //printf("token = %s\n", strings[i++]);
+                token = strtok(NULL, delim);
+            }
+            
+        }
+
         
 	if (strings[0] == NULL) continue;
         if ((strcmp("exit", strings[0]) == 0))  {                    
@@ -140,9 +159,7 @@ int main()
         
         else if (strcmp(line, "hc") == 0)
             clear_history(hist);
-	       
-        //Code for the cd command, needs to change the directory name when showing the path.
-         
+        
         else if (strcmp("cd", strings[0]) == 0){
             if (strings[1] == NULL) {
                 chdir(getenv("HOME"));
@@ -160,6 +177,7 @@ int main()
    }
    setPath(path);
    getPath();
+   clear_history(hist);
    printf("Quitting\n");
    return 0;
 }
@@ -182,6 +200,7 @@ int history(char *hist[], int current)
     
     return 0;
 }
+
 
 int clear_history(char *hist[])
 {
