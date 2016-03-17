@@ -108,11 +108,19 @@ int main()
             token = strtok(NULL, delim);
         }
         
+        if (strcmp(line, "history") != 0){
+        
         free(hist[current]);
         
         hist[current] = strdup(line);
-        
+            
+            if (current == 20){
+                current = 0;
+            }
+            else if (current < 20){
         current = (current + 1) % HISTORY_COUNT;
+            }
+        }
 
         
 	if (strings[0] == NULL) continue;
