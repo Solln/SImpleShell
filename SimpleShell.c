@@ -15,66 +15,137 @@
 #include <sys/wait.h>
 
 
-/*
-int executeLine(char** params);
-char* getPath(void);
-int setPath( char*);
-*/
 #define MAXIN 512
 #define MAXPARA 50
 #define MAXPATH 120
 #define HISTORY_COUNT 20
 
+#define NoPError "function takes no parameters"
+#define UnExPError "unexpected parameters"
+#define PathError "path expected"
+
 const char* currentDir;
 char* path;
+int current = 0;
+char *hist[HISTORY_COUNT];
 
-int history(char *hist[], int current);
-int clear_history(char *hist[]);
 
-char* getPath() { 
+char* getPath(char** strings) {
+    if (strings[1] != NULL) {
+	printf("getpath error: %s\n", NoPError);
+	return "";
+    }
     printf("%s\n", getenv("PATH"));
     return path;
 }
 
-int setPath(char *newPath) {
-    
-    if (setenv("PATH", newPath, 1) != 0) return 1;
+int setPath(char** strings) {
+    int returnVal = 0;
+    if (strings[2] != NULL) {
+	printf("setpath error: %s\n", UnExPError);
+    }
+    else if (strings[1] == NULL) {
+	printf("setpath error: %s\n", PathError);
+    }
+    else {
+	char* newPath = strings[1];
+    	returnVal = setenv("PATH", newPath, 1);
+    }
+    return returnVal;
+}
+
+int changeDirectory(char** strings) {
+   int returnVal = 1;
+   if (strings[2] != NULL) {
+        printf("cd error: %s\n", UnExPError);
+   }
+   else if (strings[1] == NULL) {
+        chdir(getenv("HOME"));
+        returnVal = 0;
+   } else if (chdir(strings[1])) perror("cd");
+   return returnVal;
+}
+
+int execute(char** strings) {
+    // Fork process
+    pid_t pid = fork();
+    // Error
+    if (pid < 0) {
+        perror(strings[0]);
+        return 1;
+    }
+    // Child process
+    else if (pid == 0) {
+        // Execute command
+        execvp(strings[0], strings);
+        // Error occurred
+        perror(strings[0]);
+        exit(0);
+    }
+    // Parent process
+    else {
+        // Wait for child process to finish
+        wait(NULL);
+        return 1;
+    }
+}
+
+int printHistory()
+{
+    int i = ((current)  % HISTORY_COUNT);
+    int order = 1;
+    do {
+        if (strcmp("", hist[i]) != 0) {
+            printf("%4d  %s\n", order, hist[i]);
+            order++;
+        }
+        i = ((i + 1) % HISTORY_COUNT);
+    } while (i != current && hist[i] != NULL);
     return 0;
 }
 
-int executeLine(char** strings) {
-        // Fork process
-        pid_t pid = fork();
+int clear_history()
+{
+    for (int i = 0; i < HISTORY_COUNT; i++)
+        hist[i] = malloc(MAXIN);
+    return 0;
+}
 
-        // Error
-        if (pid < 0) {
-            char* error = strerror(errno);
-            printf("fork: %s\n", error);
-            return 1;
-        }
+char* getHistory(char** strings) {
+    if (strings[1] != NULL) {
+        printf("error: %s\n", NoPError);
+        return "";
+    }
+    int number;
+    ++strings[0];
+    if (strings[0][0] == '-') {
+        sscanf(++strings[0], "%d", &number);
+        return hist[current - (number)];
+    }
+    sscanf(strings[0], "%d", &number);
+    return hist[number-1];
+}
 
-        // Child process
-        else if (pid == 0) {
-            // Execute command
-            execvp(strings[0], strings);
-
-            // Error occurred
-            perror(strings[0]);
-            return 0;
-        }
-
-        // Parent process
-        else {
-            // Wait for child process to finish
-            wait(NULL);
-            return 1;
-        }
+void executeLine(char** strings) {
+    if (strcmp("getpath", strings[0]) == 0) {
+        getPath(strings);
+    }
+    else if (strcmp("setpath", strings[0]) == 0) {
+        setPath(strings);
+    }
+    else if (strcmp("history", strings[0]) == 0)
+        printHistory();
+    else if (strcmp("hc", strings[0]) == 0)
+        clear_history();
+    else if (strcmp("cd", strings[0]) == 0){
+        changeDirectory(strings);
+    }
+    else execute(strings);
 }
 
 int main()
 {
     path = getenv("PATH");
-
     char line[MAXIN];
     char delim[] = " |><,&;\t";
     char* token;
@@ -82,136 +153,53 @@ int main()
     memset(strings, 0, sizeof(strings));
     char filePath[MAXPATH];
     chdir(getenv("HOME"));
-    char *hist[HISTORY_COUNT];
-    
-    
-    int i, current = 0;
-    
+    int i;
     for (i = 0; i < HISTORY_COUNT; i++)
-        hist[i] = NULL;
-
-    
+        hist[i] = malloc(MAXIN);
+    i = 0;
+    current = 0;
     bool exitShell = false;
     while(!exitShell) {
-
-	currentDir = (getcwd( filePath, MAXPATH ) != NULL)? filePath : "ERROR";
+        currentDir = (getcwd( filePath, MAXPATH ) != NULL)? filePath : "ERROR";
         printf("%s>", currentDir);
-
         if (fgets(line, sizeof(line), stdin) == NULL) break;
         (line[strlen(line)-1] == '\n')? line[strlen(line)-1] = '\0' : 0;
-
+        if ((strcmp(line, "history") != 0) && line[0] != '!') {
+            free(hist[current]);
+            strncpy(hist[current], strdup(line), MAXIN);
+            current = (current+1) % HISTORY_COUNT;
+        }
         token = strtok(line, delim);
-        int i = 0;
+        i = 0;
         while (token != NULL){
             strings[i++] = token;
-            //printf("token = %s\n", strings[i++]);
             token = strtok(NULL, delim);
         }
-        
-        if (strcmp(line, "history") != 0){
-        
-        free(hist[current]);
-        
-        hist[current] = strdup(line);
-            
-            if (current == 20){
-                current = 0;
-            }
-            else if (current < 20){
-        current = (current + 1) % HISTORY_COUNT;
-            }
-        }
-
-        char firstLetter = line[0];
-        
-        if (firstLetter == '!'){
-            
-            int number = line[1] - '0';
-            
-            //Needs to asign the Line to the command in the array at position 'number'
-            
-            
+        if (strings[0] == NULL) continue;
+        else if (strings[0][0] == '!'){
+            strncpy(line, getHistory(strings), MAXIN);
             token = strtok(line, delim);
-            int i = 0;
+            i = 0;
             while (token != NULL){
                 strings[i++] = token;
-                //printf("token = %s\n", strings[i++]);
                 token = strtok(NULL, delim);
             }
-            
         }
-
-        
-	if (strings[0] == NULL) continue;
-        if ((strcmp("exit", strings[0]) == 0))  {                    
-                    exitShell = true;
-                    //break;
+        if ((strcmp("exit", strings[0]) == 0))  {
+            if (strings[1] != NULL) printf("exit error: %s\n", NoPError);
+            else exitShell = true;
         }
-        else if (strcmp("getpath", strings[0]) == 0) {
-            getPath();
-        }
-        else if (strcmp("setpath", strings[0]) == 0) {
-            if (setPath(strings[1])) perror("setenv error:");
-        }
-        
-        else if (strcmp(line, "history") == 0)
-            history(hist, current);
-        
-        else if (strcmp(line, "hc") == 0)
-            clear_history(hist);
-        
-        else if (strcmp("cd", strings[0]) == 0){
-            if (strings[1] == NULL) {
-                chdir(getenv("HOME"));
-            } else {
-               if (chdir(strings[1]) != 0) {
-                   perror("error");
-               }
-            }
-        }
-
-        else executeLine(strings);
-
-        //To flush strings at the end of each cycle of input
+        executeLine(strings);
         memset(strings, 0, sizeof(strings));
    }
-   setPath(path);
-   getPath();
+   memset(strings, 0, sizeof(strings));
+   strings[1] = path;
+   setPath(strings);
+   strings[1] = NULL;
+   getPath(strings);
    clear_history(hist);
    printf("Quitting\n");
    return 0;
-}
-
-
-int history(char *hist[], int current)
-{
-    int i = current;
-    int hist_num = 0;
-    
-    do {
-        if (hist[i]) {
-            printf("%4d  %s\n", hist_num, hist[i]);
-            hist_num++;
-        }
-        
-        i = (i + 1) % HISTORY_COUNT;
-        
-    } while (i != current);
-    
-    return 0;
-}
-
-
-int clear_history(char *hist[])
-{
-    int i;
-    
-    for (i = 0; i < HISTORY_COUNT; i++) {
-        free(hist[i]);
-        hist[i] = NULL;
-    }
-    
-    return 0;
 }
 
 /*
