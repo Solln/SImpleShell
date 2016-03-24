@@ -143,6 +143,67 @@ void executeLine(char** strings) {
     else execute(strings);
 }
 
+void writeHistory(){
+    
+    FILE *fp;
+    
+    //char str[80];
+    //strcpy(str, getenv("HOME"));
+    //strcat(str, "hist_list.txt");
+    
+    int n;
+    
+    fp=fopen("hist_list.txt","w");
+    
+    for(n=0;n<HISTORY_COUNT;n++) {
+        
+        fprintf(fp,"%s\n",hist[n]);
+        
+    }
+    
+    fclose(fp);
+    
+}
+
+void loadHistory(){
+    
+    //char str[80];
+    //strcpy(str, getenv("HOME"));
+    //strcat(str, "hist_list.txt");
+    
+    
+    if( access( "hist_list.txt", F_OK ) != -1 ) {
+        // file exists
+        int i = 0;
+        
+        FILE *fp = fopen("hist_list.txt", "r");
+        
+        if (fp == 0)
+        {
+            fprintf(stderr, "failed to open hist_list.txt\n");
+            exit(1);
+        }
+        while (i < HISTORY_COUNT && fgets(hist[i], sizeof(hist[0]), fp))
+        {
+            hist[i][strlen(hist[i])-1] = '\0';
+            i = i + 1;
+        }
+        fclose(fp);
+        
+    } else {
+        // file doesn't exist
+        
+        FILE *fp = fopen("hist_list.txt", "w");
+        
+    }
+    
+    
+    
+
+    
+}
+
+
 int main()
 {
     path = getenv("PATH");
@@ -153,6 +214,9 @@ int main()
     memset(strings, 0, sizeof(strings));
     char filePath[MAXPATH];
     chdir(getenv("HOME"));
+    
+    loadHistory();
+    
     int i;
     for (i = 0; i < HISTORY_COUNT; i++)
         hist[i] = malloc(MAXIN);
@@ -197,7 +261,10 @@ int main()
    setPath(strings);
    strings[1] = NULL;
    getPath(strings);
-   clear_history(hist);
+    
+    writeHistory();
+    
+    clear_history();
    printf("Quitting\n");
    return 0;
 }
