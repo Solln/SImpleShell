@@ -100,7 +100,7 @@ int printHistory()
             order++;
         }
         i = ((i + 1) % HISTORY_COUNT);
-    } while (i != current && hist[i] != NULL);
+    } while (i != (current % HISTORY_COUNT) && hist[i] != NULL);
     return 0;
 }
 
@@ -111,19 +111,21 @@ int clear_history()
     return 0;
 }
 
-char* getHistory(char** strings) {
-    if (strings[1] != NULL) {
-        printf("error: %s\n", NoPError);
-        return "";
-    }
+char* getHistory(char* line) {
     int number;
-    ++strings[0];
-    if (strings[0][0] == '-') {
-        sscanf(++strings[0], "%d", &number);
-        return hist[current - (number)];
+    ++line;
+    if (line[0] == '-') {
+        if (sscanf(++line, "%d", &number) == 1) {
+            if (number > 0 && number < 20 && number < current)
+                return hist[(current % HISTORY_COUNT) - (number)];
+        }
     }
-    sscanf(strings[0], "%d", &number);
-    return hist[number-1];
+    else if (sscanf(line, "%d", &number) == 1) {
+        if (number > 0 && number < 20 && number < current)
+        return hist[number-1];
+    }
+    printf("Invalid input\n");
+    return "";
 }
 
 void executeLine(char** strings) {
@@ -142,7 +144,6 @@ void executeLine(char** strings) {
     }
     else execute(strings);
 }
-
 void writeHistory(){
     
     FILE *fp;
@@ -195,14 +196,8 @@ void loadHistory(){
         
         FILE *fp = fopen("hist_list.txt", "w");
         
-    }
-    
-    
-    
-
-    
+    }   
 }
-
 
 int main()
 {
@@ -214,12 +209,10 @@ int main()
     memset(strings, 0, sizeof(strings));
     char filePath[MAXPATH];
     chdir(getenv("HOME"));
-    
-    loadHistory();
-    
     int i;
     for (i = 0; i < HISTORY_COUNT; i++)
         hist[i] = malloc(MAXIN);
+    loadHistory();
     i = 0;
     current = 0;
     bool exitShell = false;
@@ -228,26 +221,17 @@ int main()
         printf("%s>", currentDir);
         if (fgets(line, sizeof(line), stdin) == NULL) break;
         (line[strlen(line)-1] == '\n')? line[strlen(line)-1] = '\0' : 0;
-        if ((strcmp(line, "history") != 0) && line[0] != '!') {
-            free(hist[current]);
-            strncpy(hist[current], strdup(line), MAXIN);
-            current = (current+1) % HISTORY_COUNT;
+        if (line[0] == '!'){
+            strncpy(line, getHistory(line), MAXIN);
         }
+        else if (strcmp("", line) == 0) continue;
+        strncpy(hist[current % HISTORY_COUNT], strdup(line), MAXIN);
+        ++current;
         token = strtok(line, delim);
         i = 0;
         while (token != NULL){
             strings[i++] = token;
             token = strtok(NULL, delim);
-        }
-        if (strings[0] == NULL) continue;
-        else if (strings[0][0] == '!'){
-            strncpy(line, getHistory(strings), MAXIN);
-            token = strtok(line, delim);
-            i = 0;
-            while (token != NULL){
-                strings[i++] = token;
-                token = strtok(NULL, delim);
-            }
         }
         if ((strcmp("exit", strings[0]) == 0))  {
             if (strings[1] != NULL) printf("exit error: %s\n", NoPError);
@@ -261,10 +245,8 @@ int main()
    setPath(strings);
    strings[1] = NULL;
    getPath(strings);
-    
-    writeHistory();
-    
-    clear_history();
+   writeHistory();
+   clear_history();
    printf("Quitting\n");
    return 0;
 }
