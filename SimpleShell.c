@@ -199,6 +199,79 @@ void loadHistory(){
     }   
 }
 
+alias() {
+	if (1) {
+		for(int r=0; r < 10; r++) {
+			if (strcmp(strings[0], alias[r][0])) {
+				//execute
+				//code to execute alias command
+				break;
+			}
+		}
+	}
+	else if (strcmp("alias", strings[0]) == 0) && sizeof(strings) == 1) {
+		if (alias[0][0] == null)
+			printf("No Aliases");
+		else
+			for(int r=0; r < 10; r++) {
+				if (alias[r][0] != null) {
+					for(int c=0; c < 2; c++)
+						printf("%s", alias[r][c]);
+					printf("\n");
+				}
+			}
+	}
+	else if (strcmp("alias", strings[0]) == 0) && sizeof(strings) == 3) {
+		int placed = 0;
+		for (int r=0; r < 10; r++) {
+			if (strcmp(strings[2], alias[r][1]) == 0) {
+				printf("Alias %s Has Been Replaced With %s For Command %s", alias[r][0], strings[1], alias[r][2]);
+				alias[r][0] = strings[1];
+				placed = 1;
+				break;
+			}
+		}
+		for (int r=0; r < 10; r++) {
+			if (strcmp(strings[1], alias[r][0]) == 0) {
+				printf("Command %s Has Been Replaced With %s For Alias %s", alias[r][1], strings[2], alias[r][1]);
+				alias[r][1] = strings[2];
+				placed = 1;
+				break;
+			}
+		}
+		if (sizeof(alias) == 10) {
+			printf("Alias List Is Full");
+			placed = 1;
+		}
+		if (placed == 0) {
+			alias[sizeof(alias)][0] = strings[1];
+			alias[sizeof(alias)][1] = strings[2];
+		}
+	}
+	else if (strcmp("unalias", strings[0]) == 0) && sizeof(strings) == 2) {
+		int removed = 0;
+		for(int r=0; r < 10; r++) {
+			if (strcmp(strings[1], alias[r][0])) {
+				alias[r][0] = null;
+				alias[r][1] = null;
+				while(!(r == 9)) {
+					alias[r][0] = alias[r + 1][0];
+					alias[r][1] = alias[r + 1][0];
+					r = r + 1;
+				}
+				removed = 1;
+				break;
+			}
+		}
+		if (removed == 0)
+			printf("No Such Alias");
+	}
+	else if (strcmp("alias", strings[0]) == 0) && sizeof(strings) > 3) {
+		printf("Invalid Input");
+	}
+}
+
+
 int main()
 {
     path = getenv("PATH");
@@ -206,6 +279,7 @@ int main()
     char delim[] = " |><,&;\t";
     char* token;
     char* strings[MAXPARA];
+	char* alias[10][2];
     memset(strings, 0, sizeof(strings));
     char filePath[MAXPATH];
     chdir(getenv("HOME"));
@@ -216,6 +290,7 @@ int main()
     i = 0;
     current = 0;
     bool exitShell = false;
+	//alias() you need to check for an alias first
     while(!exitShell) {
         currentDir = (getcwd( filePath, MAXPATH ) != NULL)? filePath : "ERROR";
         printf("%s>", currentDir);
